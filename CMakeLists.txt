@@ -11,4 +11,4 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 include(extern/seal.cmake)
 include(extern/pybind11.cmake)
-include(src/pseal.cmake)
+include(src/seal.cmake)

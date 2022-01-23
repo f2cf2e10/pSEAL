@@ -86,7 +86,7 @@ ext_modules = [
 setup(
     name='seal',
     version='3.7',
-    author='Andre Bertolace',
+    author='A. Bertolace',
     description='Python wrapper for MS SEAL',
     packages=find_packages(),
     ext_modules=ext_modules,
