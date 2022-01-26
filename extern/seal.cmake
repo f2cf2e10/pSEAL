@@ -6,12 +6,13 @@ set(SEAL_USE_CXX17 ON)
 set(SEAL_BUILD_DEPS ON)
 set(SEAL_USE_MSGSL ON)
 set(SEAL_USE_INTEL_HEXL OFF)
+set(SEAL_USE_GAUSSIAN_NOISE	ON)
 set(CMAKE_BUILD_TYPE Release) 
 
 FetchContent_Declare(
   seal 
-  GIT_REPOSITORY https://github.com/microsoft/SEAL
-  GIT_TAG        88bbc51dd684b82a781312ff04abd235c060163e
+  GIT_REPOSITORY https://github.com/b3rt01ac3/SEAL/
+  GIT_TAG        origin/v3.7.2a 
 )
 
 FetchContent_GetProperties(pybind11) 
