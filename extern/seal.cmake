@@ -12,7 +12,7 @@ set(CMAKE_BUILD_TYPE Release)
 FetchContent_Declare(
   seal 
   GIT_REPOSITORY https://github.com/b3rt01ac3/SEAL/
-  GIT_TAG        origin/v3.7.2a 
+  GIT_TAG        origin/v4.1.1a
 )
 
 FetchContent_GetProperties(pybind11) 

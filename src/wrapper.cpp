@@ -56,6 +56,9 @@ void print_parameters(const SEALContext &context)
      case seal::scheme_type::bfv:
           scheme_name = "BFV";
           break;
+     case seal::scheme_type::bgv:
+          scheme_name = "BGV";
+          break;
      case seal::scheme_type::ckks:
           scheme_name = "CKKS";
           break;
@@ -115,6 +118,7 @@ PYBIND11_MODULE(seal, m)
      py::enum_<scheme_type>(m, "scheme_type")
          .value("none", scheme_type::none)
          .value("bfv", scheme_type::bfv)
+         .value("bgv", scheme_type::bgv)
          .value("ckks", scheme_type::ckks)
          .export_values();
 
@@ -144,50 +148,25 @@ PYBIND11_MODULE(seal, m)
          .def_static("global", &MemoryPoolHandle::Global,
                      "Returns a MemoryPoolHandle pointing to the global memory pool")
          .def("pool_count", &MemoryPoolHandle::pool_count,
-              "Returns the number of different allocation sizes. This function returns \
-        the number of different allocation sizes the memory pool pointed to by \
-        the current MemoryPoolHandle has made. For example, if the memory pool has \
-        only allocated two allocations of sizes 128 KB, this function returns 1. \
-        If it has instead allocated one allocation of size 64 KB and one of 128 KB, \
-        this function returns 2.")
+              "Returns the number of different allocation sizes. This function returns the number of different allocation sizes the memory pool pointed to by the current MemoryPoolHandle has made. For example, if the memory pool has only allocated two allocations of sizes 128 KB, this function returns 1. If it has instead allocated one allocation of size 64 KB and one of 128 KB, this function returns 2.")
          .def("alloc_byte_count", &MemoryPoolHandle::alloc_byte_count,
-              "Returns the size of allocated memory. This functions returns the total \
-        amount of memory (in bytes) allocated by the memory pool pointed to by \
-        the current MemoryPoolHandle.")
+              "Returns the size of allocated memory. This functions returns the total amount of memory (in bytes) allocated by the memory pool pointed to by the current MemoryPoolHandle.")
          .def("use_count", &MemoryPoolHandle::use_count,
               "Returns the number of MemoryPoolHandle objects sharing this memory pool.");
 
      py::class_<MemoryManager>(m, "MemoryManager")
          .def_static("GetPool", (MemoryPoolHandle(*)(mm_prof_opt_t)) & MemoryManager::GetPool,
-                     "Returns a MemoryPoolHandle according to the currently set memory manager \
-                  profile and prof_opt. The following values for prof_opt have an effect \
-                  independent of the current profile:				\
-                       mm_prof_opt::FORCE_NEW: return MemoryPoolHandle::New() \
-                       mm_prof_opt::FORCE_GLOBAL: return MemoryPoolHandle::Global() \
-                       mm_prof_opt::FORCE_THREAD_LOCAL: return MemoryPoolHandle::ThreadLocal() \
-                  Other values for prof_opt are forwarded to the current profile and, depending \
-                  on the profile, may or may not have an effect. The value mm_prof_opt::DEFAULT \
-                  will always invoke a default behavior for the current profile.",
+                     "Returns a MemoryPoolHandle according to the currently set memory manager profile and prof_opt. The following values for prof_opt have an effect independent of the current profile: mm_prof_opt::FORCE_NEW: return MemoryPoolHandle::New() mm_prof_opt::FORCE_GLOBAL: return MemoryPoolHandle::Global() mm_prof_opt::FORCE_THREAD_LOCAL: return MemoryPoolHandle::ThreadLocal() Other values for prof_opt are forwarded to the current profile and, depending on the profile, may or may not have an effect. The value mm_prof_opt::DEFAULT will always invoke a default behavior for the current profile.",
                      "prof_opt"_a = mm_prof_opt::mm_default);
      /***************************************************************************/
 
      /***************** Modulus ***********************/
      py::class_<CoeffModulus>(m, "CoeffModulus")
          .def_static("BFVDefault", (std::vector<Modulus>(*)(std::size_t, sec_level_type)) & CoeffModulus::BFVDefault,
-                     "Returns a default coefficient modulus for the BFV scheme that guarantees\
-        a given security level when using a given poly_modulus_degree, according \
-        to the HomomorphicEncryption.org security standard. Note that all security \
-        guarantees are lost if the output is used with encryption parameters with \
-        a mismatching value for the poly_modulus_degree. \
-        The coefficient modulus returned by this function will not perform well \
-        if used with the CKKS scheme.",
+                     "Returns a default coefficient modulus for the BFV scheme that guarantees a given security level when using a given poly_modulus_degree, according to the HomomorphicEncryption.org security standard. Note that all security guarantees are lost if the output is used with encryption parameters with a mismatching value for the poly_modulus_degree. The coefficient modulus returned by this function will not perform well if used with the CKKS scheme.",
                      "poly_modulus_degree"_a, "sec_level"_a = sec_level_type::tc128)
          .def_static("Create", (std::vector<Modulus>(*)(std::size_t, std::vector<int>)) & CoeffModulus::Create,
-                     "Returns a custom coefficient modulus suitable for use with the specified \
-        poly_modulus_degree. The return value will be a vector consisting of \
-        SmallModulus elements representing distinct prime numbers of bit-lengths \
-        as given in the bit_sizes parameter. The bit sizes of the prime numbers \
-        can be at most 60 bits.",
+                     "Returns a custom coefficient modulus suitable for use with the specified poly_modulus_degree. The return value will be a vector consisting of SmallModulus elements representing distinct prime numbers of bit-lengths as given in the bit_sizes parameter. The bit sizes of the prime numbers can be at most 60 bits.",
                      "poly_modulus_degree"_a, "bit_sizes"_a);
 
      py::class_<Modulus>(m, "Modulus")
@@ -195,20 +174,10 @@ PYBIND11_MODULE(seal, m)
          .def(py::init<std::uint64_t>())
          .def(py::init<const Modulus &>())
          .def_static("BFVDefault", (std::vector<Modulus>(*)(std::size_t, sec_level_type)) & CoeffModulus::BFVDefault,
-                     "Returns a default coefficient modulus for the BFV scheme that guarantees\
-                    a given security level when using a given poly_modulus_degree, according \
-                    to the HomomorphicEncryption.org security standard. Note that all security \
-                    guarantees are lost if the output is used with encryption parameters with \
-                    a mismatching value for the poly_modulus_degree. \
-                    The coefficient modulus returned by this function will not perform well \
-                    if used with the CKKS scheme.",
+                     "Returns a default coefficient modulus for the BFV scheme that guarantees a given security level when using a given poly_modulus_degree, according to the HomomorphicEncryption.org security standard. Note that all security guarantees are lost if the output is used with encryption parameters with a mismatching value for the poly_modulus_degree. The coefficient modulus returned by this function will not perform well if used with the CKKS scheme.",
                      "poly_modulus_degree"_a, "sec_level"_a = sec_level_type::tc128)
          .def_static("Create", (std::vector<Modulus>(*)(std::size_t, std::vector<int>)) & CoeffModulus::Create,
-                     "Returns a custom coefficient modulus suitable for use with the specified \
-                    poly_modulus_degree. The return value will be a vector consisting of \
-                    Modulus elements representing distinct prime numbers of bit-lengths \
-                    as given in the bit_sizes parameter. The bit sizes of the prime numbers \
-                    can be at most 60 bits.",
+                     "Returns a custom coefficient modulus suitable for use with the specified poly_modulus_degree. The return value will be a vector consisting of Modulus elements representing distinct prime numbers of bit-lengths as given in the bit_sizes parameter. The bit sizes of the prime numbers can be at most 60 bits.",
                      "poly_modulus_degree"_a, "bit_sizes"_a)
          .def("bit_count", &Modulus::bit_count,
               "Returns the significant bit count of the value of the current SmallModulus.")
@@ -220,6 +189,11 @@ PYBIND11_MODULE(seal, m)
               "Returns whether the value of the current Modulus is zero.")
          .def("is_prime", &Modulus::is_prime,
               "Returns whether the value of the current Modulus is a prime number.");
+
+     py::class_<PlainModulus>(m, "PlainModulus")
+         .def_static("Batching", (Modulus(*)(std::size_t, int)) & PlainModulus::Batching,
+                    "Creates several prime number Modulus elements that can be used as plain_modulus encryption parameters, each supporting batching with a given poly_modulus_degree.",
+                     "poly_modulus_degree"_a, "bit_size"_a);
      /*************************************************/
 
      /***************** Encryption Parameters ***********************/
@@ -850,75 +824,41 @@ PYBIND11_MODULE(seal, m)
 
      py::class_<CKKSEncoder>(m, "CKKSEncoder")
          .def(py::init<const SEALContext &>())
-         .def("encode", (void(CKKSEncoder::*)(const std::vector<double> &, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a vector of double-precision floating-point real or complex numbers \
-         into a plaintext polynomial. Append zeros if vector size is less than N/2. \
-         Dynamic memory allocations in the process are allocated from the memory \
-         pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(const std::vector<double> &, parms_id_type, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a vector of double-precision floating-point real or complex numbers into a plaintext polynomial. Append zeros if vector size is less than N/2. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "values"_a, "parms_id"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(const std::vector<std::complex<double>> &, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a vector of double-precision floating-point real or complex numbers \
-         into a plaintext polynomial. Append zeros if vector size is less than N/2. \
-         Dynamic memory allocations in the process are allocated from the memory \
-         pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(const std::vector<std::complex<double>> &, parms_id_type, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a vector of double-precision floating-point real or complex numbers into a plaintext polynomial. Append zeros if vector size is less than N/2. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "values"_a, "parms_id"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(const std::vector<double> &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a vector of double-precision floating-point real or complex numbers \
-         into a plaintext polynomial. Append zeros if vector size is less than N/2. \
-         The encryption parameters used are the top level parameters for the given \
-         context. Dynamic memory allocations in the process are allocated from the \
-         memory pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(const std::vector<double> &, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a vector of double-precision floating-point real or complex numbers into a plaintext polynomial. Append zeros if vector size is less than N/2. The encryption parameters used are the top level parameters for the given context. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "values"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(const std::vector<std::complex<double>> &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a vector of double-precision floating-point real or complex numbers \
-         into a plaintext polynomial. Append zeros if vector size is less than N/2. \
-         The encryption parameters used are the top level parameters for the given \
-         context. Dynamic memory allocations in the process are allocated from the \
-         memory pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(const std::vector<std::complex<double>> &, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a vector of double-precision floating-point real or complex numbers into a plaintext polynomial. Append zeros if vector size is less than N/2. The encryption parameters used are the top level parameters for the given context. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "values"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(double, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a double-precision floating-point real number into a plaintext \
-         polynomial. The number repeats for N/2 times to fill all slots. Dynamic \
-         memory allocations in the process are allocated from the memory pool \
-         pointed to by the given MemoryPoolHandle.",
-              "value"_a, "parms_id"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(double, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a double-precision floating-point real number into a plaintext \
-         polynomial. The number repeats for N/2 times to fill all slots. The \
-         encryption parameters used are the top level parameters for the given \
-         context. Dynamic memory allocations in the process are allocated from \
-         the memory pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(double, parms_id_type, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a double-precision floating-point real number into a plaintext polynomial. The number repeats for N/2 times to fill all slots. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
+               "value"_a, "parms_id"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
+         .def("encode", (void(CKKSEncoder::*)(double, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a double-precision floating-point real number into a plaintext polynomial. The number repeats for N/2 times to fill all slots. The encryption parameters used are the top level parameters for the given context. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "value"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(std::complex<double>, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a double-precision complex number into a plaintext polynomial. \
-         Append zeros to fill all slots. Dynamic memory allocations in the process \
-         are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(std::complex<double>, parms_id_type, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a double-precision complex number into a plaintext polynomial. Append zeros to fill all slots. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "value"_a, "parms_id"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(std::complex<double>, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode,
-              "Encodes a double-precision complex number into a plaintext polynomial. \
-         Append zeros to fill all slots. The encryption parameters used are the \
-         top level parameters for the given context. Dynamic memory allocations \
-         in the process are allocated from the memory pool pointed to by the \
-         given MemoryPoolHandle.",
+         .def("encode", (void(CKKSEncoder::*)(std::complex<double>, double, Plaintext &, MemoryPoolHandle) const) & CKKSEncoder::encode,
+              "Encodes a double-precision complex number into a plaintext polynomial. Append zeros to fill all slots. The encryption parameters used are the top level parameters for the given context. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "value"_a, "scale"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("encode", (void(CKKSEncoder::*)(std::int64_t, parms_id_type, Plaintext &)) & CKKSEncoder::encode,
-              "Encodes an integer number into a plaintext polynomial without any scaling. \
-         The number repeats for N/2 times to fill all slots.",
+         .def("encode", (void(CKKSEncoder::*)(std::int64_t, parms_id_type, Plaintext &) const) & CKKSEncoder::encode,
+              "Encodes an integer number into a plaintext polynomial without any scaling. The number repeats for N/2 times to fill all slots.",
               "value"_a, "parms_id"_a, "destination"_a)
-         .def("encode", (void(CKKSEncoder::*)(std::int64_t, Plaintext &)) & CKKSEncoder::encode,
-              "Encodes an integer number into a plaintext polynomial without any scaling. \
-         The number repeats for N/2 times to fill all slots. The encryption \
-         parameters used are the top level parameters for the given context.",
+         .def("encode", (void(CKKSEncoder::*)(std::int64_t, Plaintext &) const) & CKKSEncoder::encode,
+              "Encodes an integer number into a plaintext polynomial without any scaling. The number repeats for N/2 times to fill all slots. The encryption parameters used are the top level parameters for the given context.",
               "value"_a, "destination"_a)
-         .def("decode", (void(CKKSEncoder::*)(const Plaintext &, std::vector<double> &, MemoryPoolHandle)) & CKKSEncoder::decode,
-              "Decodes a plaintext polynomial into double-precision floating-point \
-         real or complex numbers. Dynamic memory allocations in the process are \
-         allocated from the memory pool pointed to by the given MemoryPoolHandle.",
+         .def("decode", (void(CKKSEncoder::*)(const Plaintext &, std::vector<double> &, MemoryPoolHandle) const) & CKKSEncoder::decode,
+              "Decodes a plaintext polynomial into double-precision floating-point real or complex numbers. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "plain"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
-         .def("decode", (void(CKKSEncoder::*)(const Plaintext &, std::vector<std::complex<double>> &, MemoryPoolHandle)) & CKKSEncoder::decode,
-              "Decodes a plaintext polynomial into double-precision floating-point \
-         real or complex numbers. Dynamic memory allocations in the process are \
-         allocated from the memory pool pointed to by the given MemoryPoolHandle.",
+         .def("decode", (void(CKKSEncoder::*)(const Plaintext &, std::vector<std::complex<double>> &, MemoryPoolHandle) const) & CKKSEncoder::decode,
+              "Decodes a plaintext polynomial into double-precision floating-point real or complex numbers. Dynamic memory allocations in the process are allocated from the memory pool pointed to by the given MemoryPoolHandle.",
               "plain"_a, "destination"_a, "pool"_a = MemoryManager::GetPool())
          .def("slot_count", (std::size_t(CKKSEncoder::*)()) & CKKSEncoder::slot_count,
               "Returns the number of complex numbers encoded.");
